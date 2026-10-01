@@ -7,7 +7,7 @@
 body {
     font-family: Arial, Helvetica, sans-serif;
     background: #0b1220;
-    color: #ffffff;
+    color: white;
     min-height: 100vh;
 }
 
@@ -28,8 +28,8 @@ header p {
 }
 
 main {
-    width: 90%;
-    max-width: 900px;
+    width: 94%;
+    max-width: 950px;
     margin: 30px auto;
 }
 
@@ -38,7 +38,6 @@ main {
     border: 1px solid #263752;
     border-radius: 14px;
     padding: 25px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
 .practice-card h2 {
@@ -46,80 +45,24 @@ main {
 }
 
 #trace-container {
-    background: #050a12;
+    width: 100%;
+    background: #02050a;
     border: 2px solid #344765;
     border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 30px;
-}
-
-.trace-label {
-    color: #8fa3bf;
-    font-size: 0.9rem;
-    margin-bottom: 10px;
-}
-
-#trace {
-    position: relative;
-    height: 250px;
-    background: #02050a;
-    border: 1px solid #1e344e;
+    padding: 10px;
     overflow: hidden;
 }
 
-#trace::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    height: 1px;
-    background: #23364d;
-}
-
-#trace-line {
-    position: absolute;
-    left: 2%;
-    top: 50%;
-    width: 96%;
-    height: 3px;
-    background: #39ff88;
-    transform: translateY(-50%);
-    clip-path: polygon(
-        0% 50%,
-        5% 48%,
-        10% 52%,
-        15% 49%,
-        20% 51%,
-        25% 50%,
-        30% 49%,
-        35% 51%,
-        40% 50%,
-        45% 48%,
-        50% 52%,
-        55% 50%,
-        60% 51%,
-        65% 49%,
-        70% 50%,
-        75% 51%,
-        80% 49%,
-        85% 50%,
-        90% 51%,
-        95% 50%,
-        100% 50%
-    );
-}
-
-.distance {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-    color: #8fa3bf;
-    font-size: 0.8rem;
+#otdrCanvas {
+    display: block;
+    width: 100%;
+    height: 350px;
+    background: #02050a;
 }
 
 .question {
     text-align: center;
+    margin-top: 30px;
 }
 
 .question h2 {
@@ -135,13 +78,12 @@ main {
 
 .answer-btn,
 #next-btn {
-    border: none;
     border-radius: 8px;
     padding: 14px 18px;
     font-size: 1rem;
     font-weight: bold;
     cursor: pointer;
-    transition: transform 0.15s ease, opacity 0.15s ease;
+    transition: transform 0.15s ease;
 }
 
 .answer-btn {
@@ -150,9 +92,9 @@ main {
     border: 1px solid #344765;
 }
 
-.answer-btn:hover {
+.answer-btn:hover,
+#next-btn:hover {
     transform: translateY(-2px);
-    opacity: 0.9;
 }
 
 .answer-btn:disabled {
@@ -161,9 +103,9 @@ main {
 }
 
 #result {
-    min-height: 30px;
+    min-height: 35px;
     margin: 20px 0;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: bold;
 }
 
@@ -173,11 +115,7 @@ main {
     margin-top: 15px;
     background: #2563eb;
     color: white;
-}
-
-#next-btn:hover {
-    transform: translateY(-2px);
-    opacity: 0.9;
+    border: none;
 }
 
 .stats {
@@ -213,17 +151,10 @@ footer {
     font-size: 0.85rem;
 }
 
-/* Mobile layout */
-
 @media (max-width: 600px) {
 
     header h1 {
         font-size: 1.5rem;
-    }
-
-    main {
-        width: 94%;
-        margin: 20px auto;
     }
 
     .practice-card {
@@ -238,7 +169,7 @@ footer {
         grid-template-columns: 1fr;
     }
 
-    #trace {
-        height: 200px;
+    #otdrCanvas {
+        height: 280px;
     }
 }
