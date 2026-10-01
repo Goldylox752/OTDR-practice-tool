@@ -1,5 +1,6 @@
 // ==========================================
-// OTDR PRACTICE TOOL - VERSION 2
+// OTDR PRACTICE TOOL - VERSION 3
+// dB + dBm TRAINING
 // ==========================================
 
 const answerButtons = document.querySelectorAll(".answer-btn");
@@ -13,9 +14,8 @@ const accuracyDisplay = document.getElementById("accuracy");
 const traceLine = document.getElementById("trace-line");
 const question = document.getElementById("question");
 
-
 // ==========================================
-// OTDR EVENT DATABASE
+// FIBRE EVENT DATABASE
 // ==========================================
 
 const events = [
@@ -52,7 +52,6 @@ const events = [
     }
 ];
 
-
 // ==========================================
 // GAME VARIABLES
 // ==========================================
@@ -62,20 +61,16 @@ let currentEvent = null;
 let score = 0;
 let questions = 0;
 
-
 // ==========================================
-// RANDOM NUMBER FUNCTION
+// RANDOM NUMBER
 // ==========================================
 
 function randomNumber(min, max) {
-
     return Math.random() * (max - min) + min;
-
 }
 
-
 // ==========================================
-// GENERATE A NEW OTDR EVENT
+// GENERATE EVENT
 // ==========================================
 
 function generateEvent() {
@@ -83,30 +78,41 @@ function generateEvent() {
     const randomIndex =
         Math.floor(Math.random() * events.length);
 
-    currentEvent = events[randomIndex];
+    currentEvent = {
+        ...events[randomIndex]
+    };
 
-    // Distance between 0.5 km and 5 km
-    const distance =
-        randomNumber(0.5, 5.0);
+    // Event distance
+    currentEvent.distance =
+        Number(randomNumber(0.5, 5.0).toFixed(2));
 
-    // Loss based on event type
-    const loss =
-        randomNumber(
-            currentEvent.minLoss,
-            currentEvent.maxLoss
+    // Event loss
+    currentEvent.loss =
+        Number(
+            randomNumber(
+                currentEvent.minLoss,
+                currentEvent.maxLoss
+            ).toFixed(2)
         );
 
-    currentEvent.distance =
-        Number(distance.toFixed(2));
+    // Simulated launch power
+    currentEvent.launchPower =
+        Number(
+            randomNumber(-2, 0).toFixed(2)
+        );
 
-    currentEvent.loss =
-        Number(loss.toFixed(2));
-
+    // Power after event
+    currentEvent.receivedPower =
+        Number(
+            (
+                currentEvent.launchPower -
+                currentEvent.loss
+            ).toFixed(2)
+        );
 }
 
-
 // ==========================================
-// CREATE OTDR TRACE
+// GENERATE TRACE
 // ==========================================
 
 function generateTrace() {
@@ -116,31 +122,22 @@ function generateTrace() {
     const eventPosition =
         (currentEvent.distance / 5) * 100;
 
-
-    // Normal trace
     let tracePoints = `
         0% 50%,
-        5% 49%,
-        10% 51%,
-        15% 50%,
+        10% 50%,
         20% 49%,
-        25% 51%,
-        30% 50%,
-        35% 49%,
-        40% 51%,
+        30% 51%,
+        40% 50%,
         ${eventPosition}% 50%,
-        ${eventPosition + 1}% 50%,
         100% 50%
     `;
-
 
     // Connector
     if (currentEvent.type === "connector") {
 
         tracePoints = `
             0% 50%,
-            10% 50%,
-            20% 49%,
+            20% 50%,
             ${eventPosition}% 50%,
             ${eventPosition + 1}% 58%,
             ${eventPosition + 2}% 58%,
@@ -148,14 +145,12 @@ function generateTrace() {
         `;
     }
 
-
     // Fusion splice
     if (currentEvent.type === "splice") {
 
         tracePoints = `
             0% 50%,
             20% 50%,
-            40% 50%,
             ${eventPosition}% 50%,
             ${eventPosition + 1}% 54%,
             ${eventPosition + 2}% 54%,
@@ -163,14 +158,12 @@ function generateTrace() {
         `;
     }
 
-
-    // Macrobend
+    // Bend
     if (currentEvent.type === "bend") {
 
         tracePoints = `
             0% 50%,
             20% 50%,
-            40% 50%,
             ${eventPosition}% 50%,
             ${eventPosition + 3}% 62%,
             ${eventPosition + 7}% 62%,
@@ -178,14 +171,12 @@ function generateTrace() {
         `;
     }
 
-
     // Fibre break
     if (currentEvent.type === "break") {
 
         tracePoints = `
             0% 50%,
-            15% 50%,
-            30% 50%,
+            20% 50%,
             ${eventPosition}% 50%,
             ${eventPosition + 1}% 15%,
             ${eventPosition + 2}% 15%,
@@ -193,29 +184,18 @@ function generateTrace() {
         `;
     }
 
-
     traceLine.style.clipPath =
         `polygon(${tracePoints})`;
 
-
-    // Update question
     question.textContent =
         "What event occurred on this fibre?";
 
-
-    // Clear previous result
     result.textContent = "";
 
-
-    // Enable buttons
     answerButtons.forEach(button => {
-
         button.disabled = false;
-
     });
-
 }
-
 
 // ==========================================
 // CHECK ANSWER
@@ -225,39 +205,32 @@ function checkAnswer(selectedAnswer) {
 
     questions++;
 
-
-    // Disable buttons
     answerButtons.forEach(button => {
-
         button.disabled = true;
-
     });
-
 
     if (selectedAnswer === currentEvent.type) {
 
         score++;
 
         result.textContent =
-            `✅ Correct! ${currentEvent.name} detected around ` +
-            `${currentEvent.distance} km with approximately ` +
-            `${currentEvent.loss} dB loss.`;
+            `✅ Correct! ${currentEvent.name} detected at ` +
+            `${currentEvent.distance} km. ` +
+            `Event loss: ${currentEvent.loss} dB. ` +
+            `Received power: ${currentEvent.receivedPower} dBm.`;
 
     } else {
 
         result.textContent =
             `❌ Incorrect. The event was a ` +
-            `${currentEvent.name} at approximately ` +
+            `${currentEvent.name} at ` +
             `${currentEvent.distance} km. ` +
-            `Estimated loss: ${currentEvent.loss} dB.`;
-
+            `Loss: ${currentEvent.loss} dB. ` +
+            `Received power: ${currentEvent.receivedPower} dBm.`;
     }
 
-
     updateStats();
-
 }
-
 
 // ==========================================
 // UPDATE SCORE
@@ -269,7 +242,6 @@ function updateStats() {
 
     questionsDisplay.textContent = questions;
 
-
     const accuracy =
         questions === 0
             ? 0
@@ -277,12 +249,9 @@ function updateStats() {
                 (score / questions) * 100
             );
 
-
     accuracyDisplay.textContent =
         `${accuracy}%`;
-
 }
-
 
 // ==========================================
 // ANSWER BUTTONS
@@ -301,9 +270,8 @@ answerButtons.forEach(button => {
 
 });
 
-
 // ==========================================
-// NEXT TRACE BUTTON
+// NEXT TRACE
 // ==========================================
 
 nextButton.addEventListener("click", () => {
@@ -312,9 +280,8 @@ nextButton.addEventListener("click", () => {
 
 });
 
-
 // ==========================================
-// START THE APP
+// START
 // ==========================================
 
 generateTrace();
