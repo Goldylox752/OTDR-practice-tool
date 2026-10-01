@@ -1,6 +1,6 @@
 // ==========================================
-// OTDR PRACTICE TOOL - VERSION 3
-// dB + dBm TRAINING
+// OTDR PRACTICE TOOL - VERSION 4
+// MULTI-EVENT TROUBLESHOOTING
 // ==========================================
 
 const answerButtons = document.querySelectorAll(".answer-btn");
@@ -15,40 +15,29 @@ const traceLine = document.getElementById("trace-line");
 const question = document.getElementById("question");
 
 // ==========================================
-// FIBRE EVENT DATABASE
+// EVENT DATABASE
 // ==========================================
 
-const events = [
+const eventTypes = [
     {
         type: "connector",
         name: "Connector",
         minLoss: 0.20,
-        maxLoss: 0.75,
-        reflection: true
+        maxLoss: 0.75
     },
 
     {
         type: "splice",
         name: "Fusion Splice",
         minLoss: 0.05,
-        maxLoss: 0.30,
-        reflection: false
+        maxLoss: 0.30
     },
 
     {
         type: "bend",
         name: "Macrobend",
         minLoss: 0.30,
-        maxLoss: 2.00,
-        reflection: false
-    },
-
-    {
-        type: "break",
-        name: "Fibre Break",
-        minLoss: 10.00,
-        maxLoss: 30.00,
-        reflection: true
+        maxLoss: 2.00
     }
 ];
 
@@ -56,7 +45,9 @@ const events = [
 // GAME VARIABLES
 // ==========================================
 
-let currentEvent = null;
+let fibreEvents = [];
+
+let problemEvent = null;
 
 let score = 0;
 let questions = 0;
@@ -66,181 +57,194 @@ let questions = 0;
 // ==========================================
 
 function randomNumber(min, max) {
+
     return Math.random() * (max - min) + min;
+
 }
 
 // ==========================================
-// GENERATE EVENT
+// CREATE MULTIPLE EVENTS
 // ==========================================
 
-function generateEvent() {
+function generateEvents() {
 
-    const randomIndex =
-        Math.floor(Math.random() * events.length);
+    fibreEvents = [];
 
-    currentEvent = {
-        ...events[randomIndex]
-    };
+    const numberOfEvents = 3;
 
-    // Event distance
-    currentEvent.distance =
-        Number(randomNumber(0.5, 5.0).toFixed(2));
+    for (let i = 0; i < numberOfEvents; i++) {
 
-    // Event loss
-    currentEvent.loss =
-        Number(
+        const event =
+            eventTypes[
+                Math.floor(
+                    Math.random() * eventTypes.length
+                )
+            ];
+
+        const distance =
             randomNumber(
-                currentEvent.minLoss,
-                currentEvent.maxLoss
-            ).toFixed(2)
-        );
+                0.5,
+                4.5
+            );
 
-    // Simulated launch power
-    currentEvent.launchPower =
-        Number(
-            randomNumber(-2, 0).toFixed(2)
-        );
+        const loss =
+            randomNumber(
+                event.minLoss,
+                event.maxLoss
+            );
 
-    // Power after event
-    currentEvent.receivedPower =
-        Number(
-            (
-                currentEvent.launchPower -
-                currentEvent.loss
-            ).toFixed(2)
+        fibreEvents.push({
+
+            type: event.type,
+
+            name: event.name,
+
+            distance:
+                Number(
+                    distance.toFixed(2)
+                ),
+
+            loss:
+                Number(
+                    loss.toFixed(2)
+                )
+
+        });
+
+    }
+
+    // Sort events by distance
+
+    fibreEvents.sort(
+        (a, b) =>
+            a.distance - b.distance
+    );
+
+    // Choose the event with highest loss
+
+    problemEvent =
+        fibreEvents.reduce(
+            (highest, event) => {
+
+                return event.loss >
+                    highest.loss
+                    ? event
+                    : highest;
+
+            },
+            fibreEvents[0]
         );
 }
 
 // ==========================================
-// GENERATE TRACE
+// DRAW TRACE
 // ==========================================
 
 function generateTrace() {
 
-    generateEvent();
+    generateEvents();
 
-    const eventPosition =
-        (currentEvent.distance / 5) * 100;
+    let points = [];
 
-    let tracePoints = `
-        0% 50%,
-        10% 50%,
-        20% 49%,
-        30% 51%,
-        40% 50%,
-        ${eventPosition}% 50%,
-        100% 50%
-    `;
+    points.push("0% 50%");
 
-    // Connector
-    if (currentEvent.type === "connector") {
+    fibreEvents.forEach(event => {
 
-        tracePoints = `
-            0% 50%,
-            20% 50%,
-            ${eventPosition}% 50%,
-            ${eventPosition + 1}% 58%,
-            ${eventPosition + 2}% 58%,
-            100% 58%
-        `;
-    }
+        const position =
+            (event.distance / 5) * 100;
 
-    // Fusion splice
-    if (currentEvent.type === "splice") {
+        points.push(
+            `${position}% 50%`
+        );
 
-        tracePoints = `
-            0% 50%,
-            20% 50%,
-            ${eventPosition}% 50%,
-            ${eventPosition + 1}% 54%,
-            ${eventPosition + 2}% 54%,
-            100% 54%
-        `;
-    }
+        const drop =
+            Math.min(
+                50 + event.loss * 8,
+                85
+            );
 
-    // Bend
-    if (currentEvent.type === "bend") {
+        points.push(
+            `${position + 1}% ${drop}%`
+        );
 
-        tracePoints = `
-            0% 50%,
-            20% 50%,
-            ${eventPosition}% 50%,
-            ${eventPosition + 3}% 62%,
-            ${eventPosition + 7}% 62%,
-            100% 62%
-        `;
-    }
+    });
 
-    // Fibre break
-    if (currentEvent.type === "break") {
-
-        tracePoints = `
-            0% 50%,
-            20% 50%,
-            ${eventPosition}% 50%,
-            ${eventPosition + 1}% 15%,
-            ${eventPosition + 2}% 15%,
-            100% 15%
-        `;
-    }
+    points.push("100% 85%");
 
     traceLine.style.clipPath =
-        `polygon(${tracePoints})`;
+        `polygon(${points.join(",")})`;
 
     question.textContent =
-        "What event occurred on this fibre?";
+        "Which event has the highest loss?";
 
     result.textContent = "";
 
     answerButtons.forEach(button => {
+
         button.disabled = false;
+
     });
+
 }
 
 // ==========================================
 // CHECK ANSWER
 // ==========================================
 
-function checkAnswer(selectedAnswer) {
+function checkAnswer(answer) {
 
     questions++;
 
     answerButtons.forEach(button => {
+
         button.disabled = true;
+
     });
 
-    if (selectedAnswer === currentEvent.type) {
+    const selectedEvent =
+        fibreEvents.find(
+            event =>
+                event.type === answer
+        );
+
+    if (
+        selectedEvent &&
+        selectedEvent.type === problemEvent.type
+    ) {
 
         score++;
 
         result.textContent =
-            `✅ Correct! ${currentEvent.name} detected at ` +
-            `${currentEvent.distance} km. ` +
-            `Event loss: ${currentEvent.loss} dB. ` +
-            `Received power: ${currentEvent.receivedPower} dBm.`;
+            `✅ Correct! The highest-loss event ` +
+            `is the ${problemEvent.name} at ` +
+            `${problemEvent.distance} km ` +
+            `with ${problemEvent.loss} dB loss.`;
 
     } else {
 
         result.textContent =
-            `❌ Incorrect. The event was a ` +
-            `${currentEvent.name} at ` +
-            `${currentEvent.distance} km. ` +
-            `Loss: ${currentEvent.loss} dB. ` +
-            `Received power: ${currentEvent.receivedPower} dBm.`;
+            `❌ Not quite. The highest-loss event ` +
+            `is the ${problemEvent.name} at ` +
+            `${problemEvent.distance} km ` +
+            `with ${problemEvent.loss} dB loss.`;
+
     }
 
     updateStats();
+
 }
 
 // ==========================================
-// UPDATE SCORE
+// SCORE
 // ==========================================
 
 function updateStats() {
 
-    scoreDisplay.textContent = score;
+    scoreDisplay.textContent =
+        score;
 
-    questionsDisplay.textContent = questions;
+    questionsDisplay.textContent =
+        questions;
 
     const accuracy =
         questions === 0
@@ -251,6 +255,7 @@ function updateStats() {
 
     accuracyDisplay.textContent =
         `${accuracy}%`;
+
 }
 
 // ==========================================
@@ -259,14 +264,17 @@ function updateStats() {
 
 answerButtons.forEach(button => {
 
-    button.addEventListener("click", () => {
+    button.addEventListener(
+        "click",
+        () => {
 
-        const selectedAnswer =
-            button.dataset.answer;
+            const answer =
+                button.dataset.answer;
 
-        checkAnswer(selectedAnswer);
+            checkAnswer(answer);
 
-    });
+        }
+    );
 
 });
 
@@ -274,11 +282,14 @@ answerButtons.forEach(button => {
 // NEXT TRACE
 // ==========================================
 
-nextButton.addEventListener("click", () => {
+nextButton.addEventListener(
+    "click",
+    () => {
 
-    generateTrace();
+        generateTrace();
 
-});
+    }
+);
 
 // ==========================================
 // START
