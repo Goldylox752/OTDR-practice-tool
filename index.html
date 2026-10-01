@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>OTDR Practice Tool</title>
+    <meta
+        name="description"
+        content="Interactive OTDR fibre optic troubleshooting and practice tool."
+    >
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>🔦 OTDR Practice Tool</h1>
+        <p>Learn to identify fibre optic events and troubleshoot fibre links.</p>
+    </header>
+
+    <main>
+
+        <section class="practice-card">
+
+            <h2>OTDR Trace</h2>
+
+            <div id="trace-container">
+                <div class="trace-label">OTDR</div>
+
+                <div id="trace">
+                    <div id="trace-line"></div>
+                </div>
+
+                <div class="distance">
+                    <span>0 km</span>
+                    <span>1 km</span>
+                    <span>2 km</span>
+                    <span>3 km</span>
+                    <span>4 km</span>
+                    <span>5 km</span>
+                </div>
+            </div>
+
+            <div class="question">
+                <h2 id="question">
+                    What event occurred on this fibre?
+                </h2>
+
+                <div class="answers">
+                    <button class="answer-btn" data-answer="connector">
+                        🔌 Connector
+                    </button>
+
+                    <button class="answer-btn" data-answer="splice">
+                        🔗 Splice
+                    </button>
+
+                    <button class="answer-btn" data-answer="bend">
+                        ↪️ Bend
+                    </button>
+
+                    <button class="answer-btn" data-answer="break">
+                        ❌ Fibre Break
+                    </button>
+                </div>
+
+                <p id="result"></p>
+            </div>
+
+            <button id="next-btn">
+                Next Trace
+            </button>
+
+        </section>
+
+        <section class="stats">
+
+            <div class="stat-box">
+                <h3>Score</h3>
+                <p id="score">0</p>
+            </div>
+
+            <div class="stat-box">
+                <h3>Questions</h3>
+                <p id="questions">0</p>
+            </div>
+
+            <div class="stat-box">
+                <h3>Accuracy</h3>
+                <p id="accuracy">0%</p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer>
+        <p>OTDR Practice Tool • Fibre Technician Training</p>
+    </footer>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
